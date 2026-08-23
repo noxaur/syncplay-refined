@@ -7,7 +7,7 @@ Jellyfin 10.11 plugin. Adds **Copy invite link** under **Resume local playback**
 Dashboard → Plugins → Repositories. Add:
 
 ```text
-https://raw.githubusercontent.com/noxaur/syncplay-refined/main/manifest.json
+https://raw.githubusercontent.com/noxaur/syncplay-refined/refs/heads/main/manifest.json
 ```
 
 Install **SyncPlay Refined** and restart. Install [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-transformation) first if you can. It injects the script without writing `index.html`, which Docker often cannot.
