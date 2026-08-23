@@ -9,8 +9,6 @@ namespace Jellyfin.Plugin.SyncPlayRefined.Injection;
 
 public sealed class ScriptInjectionHostedService : IHostedService
 {
-    private const string JsInjectorScriptIdSuffix = "-client";
-
     private readonly ILogger<ScriptInjectionHostedService> _logger;
     private readonly IApplicationPaths _appPaths;
     private bool _patchedIndexHtml;
@@ -34,49 +32,24 @@ public sealed class ScriptInjectionHostedService : IHostedService
         var method = Plugin.Instance.Configuration.InjectionMethod;
         _logger.LogInformation("SyncPlay Refined injection method: {Method}", method);
 
-        switch (method)
+        var ok = method switch
         {
-            case InjectionMethod.FileTransformation:
-                if (!TryRegisterFileTransformation())
-                {
-                    _logger.LogError("File Transformation plugin was selected but is not available.");
-                }
-
-                break;
-            case InjectionMethod.JavaScriptInjector:
-                if (!TryRegisterJavaScriptInjector())
-                {
-                    _logger.LogError("JavaScript Injector plugin was selected but is not available.");
-                }
-
-                break;
-            case InjectionMethod.DirectIndexHtml:
-                if (!TryPatchIndexHtml())
-                {
-                    _logger.LogError("Direct index.html patch failed. The web client path may be missing or not writable.");
-                }
-
-                break;
-            default:
-                if (TryRegisterFileTransformation())
-                {
-                    _logger.LogInformation("Auto: using File Transformation.");
-                }
-                else if (TryRegisterJavaScriptInjector())
-                {
-                    _logger.LogInformation("Auto: using JavaScript Injector.");
-                }
-                else if (TryPatchIndexHtml())
-                {
-                    _logger.LogInformation("Auto: patched index.html on disk.");
-                }
-                else
-                {
-                    _logger.LogError(
-                        "Auto: no injection path worked. Install File Transformation or JavaScript Injector, or make jellyfin-web/index.html writable.");
-                }
-
-                break;
+            InjectionMethod.FileTransformation => TryRegisterFileTransformation(),
+            InjectionMethod.JavaScriptInjector => TryRegisterJavaScriptInjector(),
+            InjectionMethod.DirectIndexHtml => TryPatchIndexHtml(),
+            _ => TryRegisterFileTransformation()
+                || TryRegisterJavaScriptInjector()
+                || TryPatchIndexHtml()
+        };
+        if (!ok)
+        {
+            _logger.LogError(method switch
+            {
+                InjectionMethod.FileTransformation => "File Transformation plugin was selected but is not available.",
+                InjectionMethod.JavaScriptInjector => "JavaScript Injector plugin was selected but is not available.",
+                InjectionMethod.DirectIndexHtml => "Direct index.html patch failed. The web client path may be missing or not writable.",
+                _ => "Auto: no injection path worked. Install File Transformation or JavaScript Injector, or make jellyfin-web/index.html writable."
+            });
         }
 
         return Task.CompletedTask;
@@ -102,8 +75,8 @@ public sealed class ScriptInjectionHostedService : IHostedService
         try
         {
             var assembly = FindAssembly("Jellyfin.Plugin.FileTransformation", ".FileTransformation");
-            var pluginInterface = assembly?.GetType("Jellyfin.Plugin.FileTransformation.PluginInterface");
-            var register = pluginInterface?.GetMethod("RegisterTransformation", BindingFlags.Public | BindingFlags.Static);
+            var register = assembly?.GetType("Jellyfin.Plugin.FileTransformation.PluginInterface")
+                ?.GetMethod("RegisterTransformation", BindingFlags.Public | BindingFlags.Static);
             if (register is null)
             {
                 return false;
@@ -138,8 +111,8 @@ public sealed class ScriptInjectionHostedService : IHostedService
         try
         {
             var assembly = FindAssembly("Jellyfin.Plugin.JavaScriptInjector");
-            var pluginInterface = assembly?.GetType("Jellyfin.Plugin.JavaScriptInjector.PluginInterface");
-            var register = pluginInterface?.GetMethod("RegisterScript", BindingFlags.Public | BindingFlags.Static);
+            var register = assembly?.GetType("Jellyfin.Plugin.JavaScriptInjector.PluginInterface")
+                ?.GetMethod("RegisterScript", BindingFlags.Public | BindingFlags.Static);
             if (register is null)
             {
                 return false;
@@ -148,7 +121,7 @@ public sealed class ScriptInjectionHostedService : IHostedService
             var plugin = Plugin.Instance!;
             var payload = CreateJObject(register, new Dictionary<string, object?>
             {
-                ["id"] = plugin.Id + JsInjectorScriptIdSuffix,
+                ["id"] = plugin.Id + "-client",
                 ["name"] = plugin.Name,
                 ["script"] = LoaderScript(),
                 ["enabled"] = true,
@@ -162,14 +135,13 @@ public sealed class ScriptInjectionHostedService : IHostedService
                 return false;
             }
 
-            var result = register.Invoke(null, [payload]);
-            var ok = result is true;
-            if (ok)
+            if (register.Invoke(null, [payload]) is not true)
             {
-                _logger.LogInformation("Registered loader script with JavaScript Injector.");
+                return false;
             }
 
-            return ok;
+            _logger.LogInformation("Registered loader script with JavaScript Injector.");
+            return true;
         }
         catch (Exception ex)
         {
@@ -183,8 +155,8 @@ public sealed class ScriptInjectionHostedService : IHostedService
         try
         {
             var assembly = FindAssembly("Jellyfin.Plugin.JavaScriptInjector");
-            var pluginInterface = assembly?.GetType("Jellyfin.Plugin.JavaScriptInjector.PluginInterface");
-            var unregister = pluginInterface?.GetMethod("UnregisterAllScriptsFromPlugin", BindingFlags.Public | BindingFlags.Static);
+            var unregister = assembly?.GetType("Jellyfin.Plugin.JavaScriptInjector.PluginInterface")
+                ?.GetMethod("UnregisterAllScriptsFromPlugin", BindingFlags.Public | BindingFlags.Static);
             unregister?.Invoke(null, [Plugin.Instance!.Id.ToString()]);
         }
         catch (Exception ex)
@@ -207,8 +179,7 @@ public sealed class ScriptInjectionHostedService : IHostedService
             var updated = IndexHtmlTransformer.Inject(html);
             if (updated == html)
             {
-                _patchedIndexHtml = html.Contains(IndexHtmlTransformer.Marker, StringComparison.Ordinal);
-                return _patchedIndexHtml;
+                return _patchedIndexHtml = html.Contains(IndexHtmlTransformer.Marker, StringComparison.Ordinal);
             }
 
             File.WriteAllText(path, updated);
@@ -226,7 +197,7 @@ public sealed class ScriptInjectionHostedService : IHostedService
     private void TryUnpatchIndexHtml()
     {
         var path = GetIndexHtmlPath();
-        if (path is null || !File.Exists(path))
+        if (path is null)
         {
             return;
         }
@@ -248,19 +219,16 @@ public sealed class ScriptInjectionHostedService : IHostedService
 
     private string? GetIndexHtmlPath()
     {
-        var webPath = _appPaths.WebPath;
-        if (string.IsNullOrEmpty(webPath))
+        if (string.IsNullOrEmpty(_appPaths.WebPath))
         {
             return null;
         }
 
-        var path = Path.Combine(webPath, "index.html");
+        var path = Path.Combine(_appPaths.WebPath, "index.html");
         return File.Exists(path) ? path : null;
     }
 
-    private static string LoaderScript()
-    {
-        return """
+    private static string LoaderScript() => """
             (function () {
               if (document.querySelector('script[plugin="SyncPlay Refined"]')) return;
               var s = document.createElement('script');
@@ -269,44 +237,33 @@ public sealed class ScriptInjectionHostedService : IHostedService
               (document.body || document.head).appendChild(s);
             })();
             """;
-    }
 
-    private static Assembly? FindAssembly(string assemblyName, string? nameContains = null)
-    {
-        return AssemblyLoadContext.All
+    private static Assembly? FindAssembly(string assemblyName, string? nameContains = null) =>
+        AssemblyLoadContext.All
             .SelectMany(ctx => ctx.Assemblies)
             .FirstOrDefault(a =>
                 a.GetName().Name == assemblyName
                 || (nameContains is not null && (a.FullName?.Contains(nameContains, StringComparison.Ordinal) ?? false)));
-    }
 
     private static object? CreateJObject(MethodInfo method, Dictionary<string, object?> fields)
     {
-        var parameters = method.GetParameters();
-        if (parameters.Length == 0)
+        if (method.GetParameters() is not [{ ParameterType: var paramType }, ..])
         {
             return null;
         }
 
-        var paramType = parameters[0].ParameterType;
         var jObject = Activator.CreateInstance(paramType);
-        if (jObject is null)
-        {
-            return null;
-        }
-
         var indexer = paramType.GetProperty("Item", [typeof(string)]);
         var jValueType = paramType.Assembly.GetType("Newtonsoft.Json.Linq.JValue")
             ?? FindAssembly("Newtonsoft.Json")?.GetType("Newtonsoft.Json.Linq.JValue");
-        if (indexer is null || jValueType is null)
+        if (jObject is null || indexer is null || jValueType is null)
         {
             return null;
         }
 
         foreach (var (key, value) in fields)
         {
-            var token = Activator.CreateInstance(jValueType, [value]);
-            indexer.SetValue(jObject, token, [key]);
+            indexer.SetValue(jObject, Activator.CreateInstance(jValueType, [value]), [key]);
         }
 
         return jObject;

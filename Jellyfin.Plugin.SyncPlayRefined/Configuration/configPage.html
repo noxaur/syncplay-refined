@@ -17,11 +17,7 @@
                             <option value="JavaScriptInjector">JavaScript Injector plugin</option>
                             <option value="DirectIndexHtml">Direct index.html patch</option>
                         </select>
-                        <div class="fieldDescription">
-                            How the share-button script is loaded into jellyfin-web. Restart the server after saving.
-                            Auto uses File Transformation if it is installed, then JavaScript Injector, then a direct edit of index.html.
-                            File Transformation is the least painful option, especially in Docker.
-                        </div>
+                        <div class="fieldDescription">Restart after saving. Auto tries File Transformation, then JavaScript Injector, then a direct index.html patch.</div>
                     </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button">

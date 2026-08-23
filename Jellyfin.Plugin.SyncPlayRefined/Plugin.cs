@@ -1,4 +1,3 @@
-using System.Globalization;
 using Jellyfin.Plugin.SyncPlayRefined.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
@@ -23,18 +22,12 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     public static Plugin? Instance { get; private set; }
 
-    public IEnumerable<PluginPageInfo> GetPages()
-    {
-        return
-        [
-            new PluginPageInfo
-            {
-                Name = Name,
-                EmbeddedResourcePath = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}.Configuration.configPage.html",
-                    GetType().Namespace)
-            }
-        ];
-    }
+    public IEnumerable<PluginPageInfo> GetPages() =>
+    [
+        new PluginPageInfo
+        {
+            Name = Name,
+            EmbeddedResourcePath = $"{GetType().Namespace}.Configuration.configPage.html"
+        }
+    ];
 }

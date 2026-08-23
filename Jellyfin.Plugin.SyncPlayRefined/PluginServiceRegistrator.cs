@@ -7,8 +7,6 @@ namespace Jellyfin.Plugin.SyncPlayRefined;
 
 public class PluginServiceRegistrator : IPluginServiceRegistrator
 {
-    public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost applicationHost)
-    {
+    public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost applicationHost) =>
         serviceCollection.AddHostedService<ScriptInjectionHostedService>();
-    }
 }

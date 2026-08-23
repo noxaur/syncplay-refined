@@ -14,20 +14,14 @@ public class ScriptController : ControllerBase
         var assembly = typeof(Plugin).Assembly;
         var name = assembly.GetManifestResourceNames()
             .FirstOrDefault(n => n.EndsWith("Web.client.js", StringComparison.Ordinal));
-        if (name is null)
-        {
-            return NotFound();
-        }
-
-        using var stream = assembly.GetManifestResourceStream(name);
+        using var stream = name is null ? null : assembly.GetManifestResourceStream(name);
         if (stream is null)
         {
             return NotFound();
         }
 
         using var reader = new StreamReader(stream);
-        var js = reader.ReadToEnd();
         Response.Headers.CacheControl = "no-store";
-        return Content(js, "text/javascript");
+        return Content(reader.ReadToEnd(), "text/javascript");
     }
 }
