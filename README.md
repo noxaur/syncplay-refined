@@ -30,6 +30,19 @@ Dashboard → Plugins → SyncPlay Refined. Restart after saving.
 - **JavaScript Injector**: registers a loader with that plugin
 - **Direct index.html**: writes a `<script>` tag into jellyfin-web's `index.html`. Docker often cannot write that file
 
+## Dev toggle
+
+Per-browser master switch for unfinished client features. Off by default. Named flags only apply while the master is on.
+
+```js
+SyncPlayRefinedDev.enable()
+SyncPlayRefinedDev.setFeature('my-wip', true)
+SyncPlayRefinedDev.feature('my-wip') // true
+SyncPlayRefinedDev.disable()
+```
+
+Or flip via URL once: `?sprDev=1` / `?sprDev=0`, and `?sprFeature=my-wip` (or `my-wip:0`). Params are stripped after apply.
+
 ## Use
 
 1. Join or create a SyncPlay group

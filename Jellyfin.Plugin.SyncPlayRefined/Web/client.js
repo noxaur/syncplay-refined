@@ -8,8 +8,121 @@
 
   var PARAM = 'syncplayGroup';
   var STORAGE_KEY = 'syncplay-refined-join';
+  var DEV_KEY = 'syncplay-refined-dev';
+  var DEV_PARAM = 'sprDev';
+  var DEV_FEATURE_PARAM = 'sprFeature';
   var SHARE_ATTR = 'data-syncplay-refined-share';
   var LABEL_ATTR = 'data-syncplay-refined-label';
+
+  // Master switch gates named flags. Future experimental UI checks feature(name).
+  function readDev() {
+    try {
+      var raw = localStorage.getItem(DEV_KEY);
+      if (!raw) {
+        return { on: false, features: {} };
+      }
+      var parsed = JSON.parse(raw);
+      return {
+        on: !!parsed.on,
+        features: parsed.features && typeof parsed.features === 'object' ? parsed.features : {}
+      };
+    } catch (e) {
+      return { on: false, features: {} };
+    }
+  }
+
+  function writeDev(state) {
+    try {
+      localStorage.setItem(DEV_KEY, JSON.stringify({
+        on: !!state.on,
+        features: state.features || {}
+      }));
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  function isDevOn() {
+    return readDev().on;
+  }
+
+  function isDevFeature(name) {
+    if (!name) {
+      return false;
+    }
+    var state = readDev();
+    return !!(state.on && state.features[name]);
+  }
+
+  function setDevOn(on) {
+    var state = readDev();
+    state.on = !!on;
+    writeDev(state);
+    return state.on;
+  }
+
+  function setDevFeature(name, on) {
+    if (!name) {
+      return false;
+    }
+    var state = readDev();
+    if (on) {
+      state.on = true;
+      state.features[name] = true;
+    } else {
+      delete state.features[name];
+    }
+    writeDev(state);
+    return isDevFeature(name);
+  }
+
+  function captureDevToggle() {
+    try {
+      var url = new URL(window.location.href);
+      var dirty = false;
+      var master = url.searchParams.get(DEV_PARAM);
+      if (master === '1' || master === '0') {
+        setDevOn(master === '1');
+        url.searchParams.delete(DEV_PARAM);
+        dirty = true;
+      }
+      var feature = url.searchParams.get(DEV_FEATURE_PARAM);
+      if (feature) {
+        var parts = feature.split(':');
+        var fname = parts[0];
+        var fval = parts.length > 1 ? parts[1] !== '0' : true;
+        if (fname) {
+          setDevFeature(fname, fval);
+        }
+        url.searchParams.delete(DEV_FEATURE_PARAM);
+        dirty = true;
+      }
+      if (dirty) {
+        history.replaceState(null, '', url.toString());
+      }
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  window.SyncPlayRefinedDev = {
+    enabled: isDevOn,
+    toggle: function () {
+      return setDevOn(!isDevOn());
+    },
+    enable: function () {
+      return setDevOn(true);
+    },
+    disable: function () {
+      return setDevOn(false);
+    },
+    feature: isDevFeature,
+    setFeature: setDevFeature,
+    toggleFeature: function (name) {
+      return setDevFeature(name, !isDevFeature(name));
+    },
+    status: readDev
+  };
 
   function api() {
     return window.ApiClient || (window.ServerConnections && window.ServerConnections.currentApiClient && window.ServerConnections.currentApiClient()) || null;
@@ -266,6 +379,7 @@
 
   function start() {
     captureInvite();
+    captureDevToggle();
     tryJoin();
     var ticks = 0;
     var timer = window.setInterval(function () {
@@ -300,6 +414,7 @@
   }
 
   captureInvite();
+  captureDevToggle();
   if (window.__syncPlayRefinedRequireAuth === false || isAuthed()) {
     boot();
   } else {
