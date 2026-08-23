@@ -32,6 +32,8 @@ Dashboard → Plugins → SyncPlay Refined. Restart after saving.
 - **JavaScript Injector**: registers a loader with that plugin
 - **Direct index.html**: writes a `<script>` tag into jellyfin-web's `index.html`. Docker often cannot write that file
 
+After a plugin update, hard-refresh the web client once. The script URL is `/SyncPlayRefined/script?v=<plugin-version>`, so an old cached `client.js` should not stick after that. Settings toggles also refresh from `/SyncPlayRefined/flags` on load.
+
 ## Use
 
 1. Join or create a SyncPlay group

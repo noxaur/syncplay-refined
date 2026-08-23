@@ -23,6 +23,58 @@
     }
   };
 
+  function pluginUrl(name) {
+    var scripts = document.getElementsByTagName('script');
+    var i;
+    for (i = scripts.length - 1; i >= 0; i--) {
+      var src = scripts[i].src || '';
+      if (src.indexOf('SyncPlayRefined/script') !== -1) {
+        return src.replace(/script(\?.*)?$/, name);
+      }
+    }
+    return '../SyncPlayRefined/' + name;
+  }
+
+  function flagValue(data, pascal, camel) {
+    var v = data[pascal];
+    if (typeof v !== 'boolean') {
+      v = data[camel];
+    }
+    return typeof v === 'boolean' ? v : null;
+  }
+
+  function applyFlags(data) {
+    if (!data) {
+      return;
+    }
+    var disband = flagValue(data, 'DisbandGroup', 'disbandGroup');
+    if (disband !== null) {
+      window.__syncPlayRefinedDisbandGroup = disband;
+    }
+    var dev = flagValue(data, 'EnableDevFeatures', 'enableDevFeatures');
+    if (dev !== null) {
+      window.__syncPlayRefinedDev = dev;
+    }
+    var auth = flagValue(data, 'RequiresAuthentication', 'requiresAuthentication');
+    if (auth !== null) {
+      window.__syncPlayRefinedRequireAuth = auth;
+    }
+  }
+
+  function loadFlags() {
+    if (typeof fetch !== 'function') {
+      return Promise.resolve();
+    }
+    return fetch(pluginUrl('flags'), { cache: 'no-store', credentials: 'same-origin' })
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(applyFlags)
+      .catch(function () {
+        /* keep preamble */
+      });
+  }
+
   function api() {
     return window.ApiClient || (window.ServerConnections && window.ServerConnections.currentApiClient && window.ServerConnections.currentApiClient()) || null;
   }
@@ -373,6 +425,9 @@
       });
     }).observe(document.documentElement, { childList: true, subtree: true });
     scan();
+    loadFlags().then(function () {
+      scan();
+    });
     document.addEventListener('viewshow', tryJoin, true);
   }
 

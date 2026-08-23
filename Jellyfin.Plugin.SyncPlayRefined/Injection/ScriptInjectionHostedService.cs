@@ -230,13 +230,19 @@ public sealed class ScriptInjectionHostedService : IHostedService
 
     private static string LoaderScript() => """
             (function () {
-              if (document.querySelector('script[plugin="SyncPlay Refined"]')) return;
+              var src = '__SRC__';
+              var existing = document.querySelector('script[plugin="SyncPlay Refined"]');
+              if (existing) {
+                if ((existing.getAttribute('src') || '') === src) return;
+                existing.src = src;
+                return;
+              }
               var s = document.createElement('script');
               s.setAttribute('plugin', 'SyncPlay Refined');
-              s.src = '../SyncPlayRefined/script';
+              s.src = src;
               (document.body || document.head).appendChild(s);
             })();
-            """;
+            """.Replace("__SRC__", IndexHtmlTransformer.ScriptSrc, StringComparison.Ordinal);
 
     private static Assembly? FindAssembly(string assemblyName, string? nameContains = null) =>
         AssemblyLoadContext.All

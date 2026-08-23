@@ -51,6 +51,8 @@ def main() -> None:
     assert r"/\/SyncPlay\/Leave(?:\?|$)/i" in js
     assert "Disband group" in js
     assert "SyncPlayRefined/Disband" in js
+    assert "pluginUrl('flags')" in js
+    assert "cache: 'no-store'" in js
 
     cs = DISBAND.read_text()
     assert "OrdinalIgnoreCase" in cs
