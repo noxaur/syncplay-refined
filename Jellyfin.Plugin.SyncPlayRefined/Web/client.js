@@ -24,7 +24,8 @@
   };
 
   function pluginUrl(name) {
-    var scripts = document.getElementsByTagName('script');
+    var list = document.getElementsByTagName;
+    var scripts = typeof list === 'function' ? list.call(document, 'script') : [];
     var i;
     for (i = scripts.length - 1; i >= 0; i--) {
       var src = scripts[i].src || '';
