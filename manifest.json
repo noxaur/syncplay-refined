@@ -8,6 +8,14 @@
     "category": "General",
     "versions": [
       {
+        "version": "2026.8.23.4",
+        "changelog": "Merge pull request #5 from noxaur/cursor/fix-file-transformation-regex-466b",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/noxaur/syncplay-refined/main/dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_2026.8.23.4.zip",
+        "checksum": "32246FA90A50CC6B0D1BDA9212E1B620",
+        "timestamp": "2026-08-23T20:13:48Z"
+      },
+      {
         "version": "2026.8.23.3",
         "changelog": "Merge pull request #3 from noxaur/cursor/196fc383",
         "targetAbi": "10.11.0.0",

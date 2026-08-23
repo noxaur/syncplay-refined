@@ -85,7 +85,7 @@ public sealed class ScriptInjectionHostedService : IHostedService
             var payload = CreateJObject(register, new Dictionary<string, object?>
             {
                 ["id"] = Plugin.Instance!.Id.ToString(),
-                ["fileNamePattern"] = "index.html",
+                ["fileNamePattern"] = IndexHtmlTransformer.FileNamePattern,
                 ["callbackAssembly"] = typeof(IndexHtmlTransformer).Assembly.FullName,
                 ["callbackClass"] = typeof(IndexHtmlTransformer).FullName,
                 ["callbackMethod"] = nameof(IndexHtmlTransformer.TransformIndexHtml)
