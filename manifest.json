@@ -8,6 +8,14 @@
     "category": "General",
     "versions": [
       {
+        "version": "1.0.0.1",
+        "changelog": "Resolve the group id from SyncPlay/List so Copy invite link works on the webpack web client.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/noxaur/syncplay-refined/cursor/syncplay-invite-link/dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_1.0.0.1.zip",
+        "checksum": "925805A4981E3BEEF511AEAEE4E1FE15",
+        "timestamp": "2026-08-23T18:00:00Z"
+      },
+      {
         "version": "1.0.0.0",
         "changelog": "Initial release: copy invite link under Resume local playback, auto-join from the URL.",
         "targetAbi": "10.11.0.0",

@@ -81,7 +81,109 @@
     return plugin && plugin.instance ? plugin.instance.Manager : null;
   }
 
-  function getGroupId() {
+  function groupIdOf(group) {
+    return (group && (group.GroupId || group.groupId || group.Id)) || null;
+  }
+
+  function parseGroups(data) {
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data);
+      } catch (e) {
+        return [];
+      }
+    }
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data && Array.isArray(data.Items)) {
+      return data.Items;
+    }
+    return [];
+  }
+
+  function listGroups(api) {
+    var req;
+    if (typeof api.ajax === 'function') {
+      req = api.ajax({
+        type: 'GET',
+        url: api.getUrl('SyncPlay/List'),
+        dataType: 'json'
+      });
+    } else {
+      var headers = {};
+      var token = typeof api.accessToken === 'function' ? api.accessToken() : '';
+      if (token) {
+        headers.Authorization = 'MediaBrowser Token="' + token + '"';
+        headers['X-Emby-Token'] = token;
+      }
+      req = fetch(api.getUrl('SyncPlay/List'), { headers: headers }).then(function (res) {
+        if (!res.ok) {
+          throw new Error('List failed: ' + res.status);
+        }
+        return res.json();
+      });
+    }
+    return Promise.resolve(req).then(parseGroups);
+  }
+
+  function currentUserName(api) {
+    try {
+      if (api._currentUser && api._currentUser.Name) {
+        return api._currentUser.Name;
+      }
+    } catch (e) {
+      /* ignore */
+    }
+    return null;
+  }
+
+  function participantName(p) {
+    return typeof p === 'string' ? p : (p && (p.Name || p.name)) || '';
+  }
+
+  function groupsForUser(groups, name) {
+    if (!name) {
+      return [];
+    }
+    var lower = name.toLowerCase();
+    return groups.filter(function (g) {
+      var parts = g.Participants || g.participants || [];
+      for (var i = 0; i < parts.length; i++) {
+        if (participantName(parts[i]).toLowerCase() === lower) {
+          return true;
+        }
+      }
+      return false;
+    });
+  }
+
+  function menuGroupName() {
+    var title = document.querySelector('.syncPlayGroupMenu .actionSheetTitle, .actionSheetTitle');
+    return title ? String(title.textContent || '').trim() : '';
+  }
+
+  function pickGroup(groups, name) {
+    var mine = groupsForUser(groups, name);
+    var title = menuGroupName();
+    var pool = mine.length ? mine : groups;
+    if (title) {
+      for (var i = 0; i < pool.length; i++) {
+        if ((pool[i].GroupName || pool[i].groupName || '') === title) {
+          return pool[i];
+        }
+      }
+    }
+    if (mine.length) {
+      return mine[0];
+    }
+    if (groups.length === 1) {
+      return groups[0];
+    }
+    return null;
+  }
+
+  function getGroupIdFromManager() {
     var mgr = getSyncPlayManager();
     if (!mgr) {
       return null;
@@ -93,6 +195,30 @@
     return info.GroupId || info.groupId || info.Id || null;
   }
 
+  function resolveGroupId() {
+    var id = getGroupIdFromManager();
+    if (id) {
+      return Promise.resolve(id);
+    }
+    var api = getApiClient();
+    if (!api) {
+      return Promise.resolve(null);
+    }
+    var named = currentUserName(api);
+    var userP = named
+      ? Promise.resolve(named)
+      : (typeof api.getCurrentUser === 'function'
+        ? Promise.resolve(api.getCurrentUser()).then(function (u) {
+          return u && u.Name;
+        })
+        : Promise.resolve(null));
+    return Promise.all([listGroups(api), userP]).then(function (pair) {
+      return groupIdOf(pickGroup(pair[0], pair[1]));
+    }).catch(function () {
+      return null;
+    });
+  }
+
   function buildInviteLink(groupId) {
     var url = new URL(window.location.href);
     url.searchParams.set(PARAM, groupId);
@@ -100,6 +226,9 @@
   }
 
   function joinGroup(api, groupId) {
+    if (typeof api.joinSyncPlayGroup === 'function') {
+      return api.joinSyncPlayGroup({ GroupId: groupId });
+    }
     var body = JSON.stringify({ GroupId: groupId });
     if (typeof api.ajax === 'function') {
       return api.ajax({
@@ -192,19 +321,17 @@
     ev.preventDefault();
     ev.stopPropagation();
     var el = ev.currentTarget;
-    var groupId = getGroupId();
-    if (!groupId) {
-      setLabel(el, 'Not in a group');
-      return;
-    }
-    copyText(buildInviteLink(groupId)).then(function () {
-      if (!notify('Invite link copied')) {
-        setLabel(el, 'Copied');
-      } else {
-        setLabel(el, 'Copied');
+    resolveGroupId().then(function (groupId) {
+      if (!groupId) {
+        setLabel(el, 'Not in a group');
+        return;
       }
-    }).catch(function () {
-      setLabel(el, 'Copy failed');
+      return copyText(buildInviteLink(groupId)).then(function () {
+        notify('Invite link copied');
+        setLabel(el, 'Copied');
+      }).catch(function () {
+        setLabel(el, 'Copy failed');
+      });
     });
   }
 

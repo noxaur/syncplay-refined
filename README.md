@@ -20,7 +20,7 @@ Sideload instead:
 2. Copy `Jellyfin.Plugin.SyncPlayRefined.dll` to `<jellyfin-config>/plugins/SyncPlayRefined/`
 3. Restart Jellyfin
 
-The test zip on this branch is `dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_1.0.0.0.zip`.
+The test zip on this branch is `dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_1.0.0.1.zip`.
 
 ## Config
 
@@ -48,6 +48,6 @@ https://host:8096/web/index.html?syncplayGroup=GUID#!/home
 
 `manifest.json` is the catalog history. Newest version first. Prepend on bump. Do not rewrite or drop old entries. Keep each changelog to one line.
 
-This test branch's `sourceUrl` points at `dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_1.0.0.0.zip` on `cursor/syncplay-invite-link`. Fill `checksum` with the MD5 of that zip. Never fake hashes.
+This test branch's `sourceUrl` points at `dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_1.0.0.1.zip` on `cursor/syncplay-invite-link`. Fill `checksum` with the MD5 of that zip. Never fake hashes.
 
 Version must stay in lockstep in `Jellyfin.Plugin.SyncPlayRefined.csproj`, `build.yaml`, and the new `manifest.json` entry.
