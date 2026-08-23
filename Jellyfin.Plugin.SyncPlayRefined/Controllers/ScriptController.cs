@@ -34,11 +34,16 @@ public class ScriptController : ControllerBase
 
         using var reader = new StreamReader(stream);
         Response.Headers.CacheControl = "no-store";
-        var requireAuth = Plugin.Instance?.Configuration.RequiresAuthentication ?? true;
-        var disband = Plugin.Instance?.Configuration.DisbandGroup == true;
-        var preamble = "window.__syncPlayRefinedRequireAuth=" + (requireAuth ? "true" : "false")
-            + ";window.__syncPlayRefinedDisbandGroup=" + (disband ? "true" : "false") + ";\n";
-        return Content(preamble + reader.ReadToEnd(), "text/javascript");
+        var config = Plugin.Instance?.Configuration;
+        var requireAuth = config?.RequiresAuthentication ?? true;
+        var enableDev = config?.EnableDevFeatures ?? false;
+        var disband = config?.DisbandGroup == true;
+        return Content(
+            "window.__syncPlayRefinedRequireAuth=" + (requireAuth ? "true" : "false") +
+            ";window.__syncPlayRefinedDev=" + (enableDev ? "true" : "false") +
+            ";window.__syncPlayRefinedDisbandGroup=" + (disband ? "true" : "false") + ";\n" +
+            reader.ReadToEnd(),
+            "text/javascript");
     }
 
     [HttpPost("Disband")]

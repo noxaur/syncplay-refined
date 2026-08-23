@@ -11,6 +11,18 @@
   var SHARE_ATTR = 'data-syncplay-refined-share';
   var LABEL_ATTR = 'data-syncplay-refined-label';
 
+  // Server injects window.__syncPlayRefinedDev from plugin settings. Off unless that is true.
+  function isDevOn() {
+    return window.__syncPlayRefinedDev === true;
+  }
+
+  window.SyncPlayRefinedDev = {
+    enabled: isDevOn,
+    feature: function (name) {
+      return !!name && isDevOn();
+    }
+  };
+
   function api() {
     return window.ApiClient || (window.ServerConnections && window.ServerConnections.currentApiClient && window.ServerConnections.currentApiClient()) || null;
   }
