@@ -16,5 +16,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool RequiresAuthentication { get; set; } = true;
 
+    public bool DisbandGroup { get; set; }
+
     public bool EnableDevFeatures { get; set; }
 }

@@ -169,6 +169,76 @@
     });
   }
 
+  function rewriteLeaveUrl(url) {
+    if (!window.__syncPlayRefinedDisbandGroup || url == null) {
+      return url;
+    }
+    var s = String(url);
+    if (!/\/SyncPlay\/Leave(?:\?|$)/i.test(s)) {
+      return url;
+    }
+    var a = api();
+    if (a && typeof a.getUrl === 'function') {
+      return a.getUrl('SyncPlayRefined/Disband');
+    }
+    return s.replace(/\/SyncPlay\/Leave/i, '/SyncPlayRefined/Disband');
+  }
+
+  function installLeaveRewrite() {
+    if (installLeaveRewrite.done) {
+      return;
+    }
+    installLeaveRewrite.done = true;
+
+    var origFetch = window.fetch;
+    if (typeof origFetch === 'function') {
+      window.fetch = function (input, init) {
+        var url = typeof input === 'string' ? input : (input && input.url);
+        var method = (init && init.method) || (input && typeof input !== 'string' && input.method) || 'GET';
+        var next = rewriteLeaveUrl(url);
+        if (next !== url && String(method).toUpperCase() === 'POST') {
+          if (typeof Request !== 'undefined' && typeof input !== 'string' && input instanceof Request) {
+            return origFetch.call(this, new Request(next, input));
+          }
+          return origFetch.call(this, next, init);
+        }
+        return origFetch.apply(this, arguments);
+      };
+    }
+
+    var origOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (method, url) {
+      var args = [method];
+      args.push(String(method).toUpperCase() === 'POST' ? rewriteLeaveUrl(url) : url);
+      for (var i = 2; i < arguments.length; i++) {
+        args.push(arguments[i]);
+      }
+      return origOpen.apply(this, args);
+    };
+  }
+
+  function relabelLeave(root) {
+    if (!window.__syncPlayRefinedDisbandGroup) {
+      return;
+    }
+    var leave = root.querySelector('[data-id="leave-group"]');
+    if (leave) {
+      replaceItemText(leave, 'Disband group', 'Remove everyone from this group');
+    }
+    if (root.id !== 'app-sync-play-menu') {
+      return;
+    }
+    var items = root.querySelectorAll('[role="menuitem"]');
+    if (!items.length) {
+      return;
+    }
+    var last = items[items.length - 1];
+    if (last.getAttribute(SHARE_ATTR)) {
+      return;
+    }
+    replaceItemText(last, 'Disband group', 'Remove everyone from this group');
+  }
+
   function replaceItemText(node, primary, secondary) {
     var primaryEl = node.querySelector('.MuiListItemText-primary, .listItemBodyText');
     var secondaryEl = node.querySelector('.MuiListItemText-secondary, .secondaryText, .listItemBodyText.secondary');
@@ -180,6 +250,7 @@
   }
 
   function injectMuiMenu(menu) {
+    relabelLeave(menu);
     if (menu.querySelector('[' + SHARE_ATTR + ']')) {
       return;
     }
@@ -206,6 +277,7 @@
   }
 
   function injectActionSheet(root) {
+    relabelLeave(root);
     if (root.querySelector('[' + SHARE_ATTR + ']')) {
       return;
     }
@@ -277,6 +349,7 @@
   }
 
   function start() {
+    installLeaveRewrite();
     captureInvite();
     tryJoin();
     var ticks = 0;

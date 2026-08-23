@@ -33,6 +33,8 @@ function installBrowserStubs() {
   g.setInterval = function () { return 0; };
   g.clearInterval = function () {};
   g.setTimeout = function () { return 0; };
+  g.XMLHttpRequest = function () {};
+  g.XMLHttpRequest.prototype = { open: function () {} };
   g.URL = URL;
   g.__syncPlayRefinedRequireAuth = false;
   delete g.__syncPlayRefined;

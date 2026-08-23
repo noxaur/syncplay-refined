@@ -8,6 +8,14 @@
     "category": "General",
     "versions": [
       {
+        "version": "2026.8.23.5",
+        "changelog": "Add a setting that turns Leave group into Disband group. (#7)",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/noxaur/syncplay-refined/main/dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_2026.8.23.5.zip",
+        "checksum": "C4D7D796352C1435D5EF0B58D1F40DA1",
+        "timestamp": "2026-08-23T20:45:28Z"
+      },
+      {
         "version": "2026.8.23.4",
         "changelog": "Merge pull request #5 from noxaur/cursor/fix-file-transformation-regex-466b",
         "targetAbi": "10.11.0.0",
