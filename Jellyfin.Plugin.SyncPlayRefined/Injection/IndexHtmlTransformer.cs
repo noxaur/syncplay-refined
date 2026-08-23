@@ -1,11 +1,4 @@
-using System.Reflection;
-
 namespace Jellyfin.Plugin.SyncPlayRefined.Injection;
-
-public sealed class PatchRequestPayload
-{
-    public string? Contents { get; set; }
-}
 
 public static class IndexHtmlTransformer
 {
@@ -20,12 +13,7 @@ public static class IndexHtmlTransformer
         }
 
         var bodyClose = html.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
-        if (bodyClose < 0)
-        {
-            return html + ScriptTag;
-        }
-
-        return html.Insert(bodyClose, ScriptTag + "\n");
+        return bodyClose < 0 ? html + ScriptTag : html.Insert(bodyClose, ScriptTag + "\n");
     }
 
     public static string Strip(string html)
@@ -46,30 +34,22 @@ public static class IndexHtmlTransformer
 
     private static string ReadContents(object? payload)
     {
-        switch (payload)
+        if (payload is string html)
         {
-            case null:
-                return string.Empty;
-            case string html:
-                return html;
-            case PatchRequestPayload typed:
-                return typed.Contents ?? string.Empty;
+            return html;
         }
 
-        var type = payload.GetType();
-        var prop = type.GetProperty("Contents") ?? type.GetProperty("contents");
-        if (prop?.GetValue(payload) is string contents)
+        var type = payload?.GetType();
+        if (type is null)
+        {
+            return string.Empty;
+        }
+
+        if ((type.GetProperty("Contents") ?? type.GetProperty("contents"))?.GetValue(payload) is string contents)
         {
             return contents;
         }
 
-        var indexer = type.GetProperty("Item", [typeof(string)]);
-        if (indexer?.GetValue(payload, ["contents"]) is { } token)
-        {
-            return token.ToString() ?? string.Empty;
-        }
-
-        return string.Empty;
+        return type.GetProperty("Item", [typeof(string)])?.GetValue(payload, ["contents"])?.ToString() ?? string.Empty;
     }
 }
-

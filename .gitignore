@@ -1,6 +1,7 @@
 bin/
 obj/
 artifacts/
+dist/pack/
 .vs/
 .idea/
 *.user
