@@ -13,6 +13,7 @@ jobs:
         with:
           dotnet-version: "9.0.x"
       - run: python3 scripts/release.py self-test
+      - run: node scripts/check-dev-toggle.js
       - run: dotnet test tests/Jellyfin.Plugin.SyncPlayRefined.Tests.csproj -c Release
       - run: dotnet build Jellyfin.Plugin.SyncPlayRefined/Jellyfin.Plugin.SyncPlayRefined.csproj -c Release
 

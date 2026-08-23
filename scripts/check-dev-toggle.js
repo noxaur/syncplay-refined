@@ -10,14 +10,11 @@ function store() {
   return {
     getItem: (k) => (Object.prototype.hasOwnProperty.call(data, k) ? data[k] : null),
     setItem: (k, v) => { data[k] = String(v); },
-    removeItem: (k) => { delete data[k]; },
-    _data: data
+    removeItem: (k) => { delete data[k]; }
   };
 }
 
-function installBrowserStubs(href) {
-  const localStorage = store();
-  const sessionStorage = store();
+function installBrowserStubs() {
   const g = globalThis;
   g.window = g;
   g.document = {
@@ -27,27 +24,26 @@ function installBrowserStubs(href) {
     querySelector() { return null; },
     querySelectorAll() { return []; }
   };
-  g.localStorage = localStorage;
-  g.sessionStorage = sessionStorage;
-  g.history = {
-    replaceState(_s, _t, url) {
-      g.location = new URL(url, 'http://localhost/');
-    }
-  };
-  g.location = new URL(href);
+  g.localStorage = store();
+  g.sessionStorage = store();
+  g.history = { replaceState() {} };
+  g.location = new URL('http://localhost/web/index.html');
   g.MutationObserver = function () { this.observe = function () {}; };
   g.requestAnimationFrame = (fn) => fn();
+  g.setInterval = function () { return 0; };
+  g.clearInterval = function () {};
+  g.setTimeout = function () { return 0; };
   g.URL = URL;
   g.__syncPlayRefinedRequireAuth = false;
   delete g.__syncPlayRefined;
+  delete g.__syncPlayRefinedDev;
   delete g.SyncPlayRefinedDev;
-  return { localStorage, sessionStorage };
 }
 
-function loadClient() {
+function loadClient(prefix) {
   const file = path.join(__dirname, '..', 'Jellyfin.Plugin.SyncPlayRefined', 'Web', 'client.js');
   // eslint-disable-next-line no-eval
-  eval(fs.readFileSync(file, 'utf8'));
+  eval((prefix || '') + fs.readFileSync(file, 'utf8'));
 }
 
 function assert(cond, msg) {
@@ -56,41 +52,34 @@ function assert(cond, msg) {
   }
 }
 
-installBrowserStubs('http://localhost/web/index.html');
+installBrowserStubs();
+globalThis.localStorage.setItem('syncplay-refined-dev', JSON.stringify({ on: true, features: { leftover: true } }));
 loadClient();
 
-const Dev = globalThis.SyncPlayRefinedDev;
+let Dev = globalThis.SyncPlayRefinedDev;
 assert(Dev, 'SyncPlayRefinedDev missing');
-assert(Dev.enabled() === false, 'default off');
+assert(Dev.enabled() === false, 'default off when server flag omitted');
 assert(Dev.feature('future-thing') === false, 'feature off when master off');
+assert(Dev.enable === undefined, 'no per-browser enable()');
+assert(Dev.setFeature === undefined, 'no per-browser setFeature()');
 
-assert(Dev.enable() === true, 'enable');
-assert(Dev.enabled() === true, 'enabled after enable');
-assert(Dev.feature('future-thing') === false, 'named feature still off');
+globalThis.__syncPlayRefinedDev = true;
+assert(Dev.enabled() === true, 'reads live server flag');
+assert(Dev.feature('future-thing') === true, 'feature follows master');
+assert(Dev.feature('') === false, 'empty feature name is off');
 
-assert(Dev.setFeature('future-thing', true) === true, 'setFeature on');
-assert(Dev.feature('future-thing') === true, 'feature on');
-assert(Dev.status().features['future-thing'] === true, 'status lists feature');
+globalThis.__syncPlayRefinedDev = false;
+assert(Dev.enabled() === false, 'live flag off');
+assert(Dev.feature('future-thing') === false, 'feature off after master off');
 
-assert(Dev.disable() === false, 'disable master');
-assert(Dev.feature('future-thing') === false, 'master gates leftover features');
-assert(Dev.status().features['future-thing'] === true, 'feature retained while gated');
+installBrowserStubs();
+loadClient('window.__syncPlayRefinedRequireAuth=false;window.__syncPlayRefinedDev=true;\n');
+Dev = globalThis.SyncPlayRefinedDev;
+assert(Dev.enabled() === true, 'injected prefix enables master');
+assert(Dev.feature('alpha') === true, 'injected prefix enables features');
 
-assert(Dev.toggle() === true, 'toggle on');
-assert(Dev.feature('future-thing') === true, 'feature returns after master on');
-assert(Dev.toggleFeature('future-thing') === false, 'toggleFeature off');
-assert(Dev.feature('future-thing') === false, 'feature off after toggleFeature');
-
-installBrowserStubs('http://localhost/web/index.html?sprDev=1&sprFeature=alpha');
-loadClient();
-assert(globalThis.SyncPlayRefinedDev.enabled() === true, 'url enables master');
-assert(globalThis.SyncPlayRefinedDev.feature('alpha') === true, 'url enables feature');
-assert(!String(globalThis.location).includes('sprDev'), 'sprDev stripped');
-assert(!String(globalThis.location).includes('sprFeature'), 'sprFeature stripped');
-
-installBrowserStubs('http://localhost/web/index.html?sprDev=0');
-globalThis.localStorage.setItem('syncplay-refined-dev', JSON.stringify({ on: true, features: { alpha: true } }));
-loadClient();
-assert(globalThis.SyncPlayRefinedDev.enabled() === false, 'url disables master');
+installBrowserStubs();
+loadClient('window.__syncPlayRefinedRequireAuth=false;window.__syncPlayRefinedDev=false;\n');
+assert(globalThis.SyncPlayRefinedDev.enabled() === false, 'injected prefix disables master');
 
 console.log('check-dev-toggle: ok');

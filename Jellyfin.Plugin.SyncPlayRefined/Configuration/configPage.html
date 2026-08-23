@@ -16,6 +16,13 @@
                         </label>
                         <div class="fieldDescription">When enabled, the client script waits until a user is signed in. Restart after saving.</div>
                     </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input is="emby-checkbox" type="checkbox" id="EnableDevFeatures" />
+                            <span>Enable experimental features</span>
+                        </label>
+                        <div class="fieldDescription">Master switch for unfinished client features. Applies to every web client on this server. Off by default. Reload the web client after saving.</div>
+                    </div>
                     <div class="selectContainer">
                         <label class="selectLabel" for="InjectionMethod">Script injection method</label>
                         <select is="emby-select" id="InjectionMethod" name="InjectionMethod">
@@ -53,6 +60,7 @@
                     ApiClient.getPluginConfiguration(SyncPlayRefinedConfig.pluginUniqueId).then(function (config) {
                         document.querySelector('#InjectionMethod').value = injectionMethodValue(config.InjectionMethod);
                         document.querySelector('#RequiresAuthentication').checked = config.RequiresAuthentication !== false;
+                        document.querySelector('#EnableDevFeatures').checked = config.EnableDevFeatures === true;
                         Dashboard.hideLoadingMsg();
                     });
                 });
@@ -63,6 +71,7 @@
                     ApiClient.getPluginConfiguration(SyncPlayRefinedConfig.pluginUniqueId).then(function (config) {
                         config.InjectionMethod = document.querySelector('#InjectionMethod').value;
                         config.RequiresAuthentication = document.querySelector('#RequiresAuthentication').checked;
+                        config.EnableDevFeatures = document.querySelector('#EnableDevFeatures').checked;
                         ApiClient.updatePluginConfiguration(SyncPlayRefinedConfig.pluginUniqueId, config).then(function (result) {
                             Dashboard.processPluginConfigurationUpdateResult(result);
                         });

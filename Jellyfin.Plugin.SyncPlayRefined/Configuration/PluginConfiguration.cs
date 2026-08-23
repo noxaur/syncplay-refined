@@ -15,4 +15,6 @@ public class PluginConfiguration : BasePluginConfiguration
     public InjectionMethod InjectionMethod { get; set; } = InjectionMethod.Auto;
 
     public bool RequiresAuthentication { get; set; } = true;
+
+    public bool EnableDevFeatures { get; set; }
 }
