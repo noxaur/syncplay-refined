@@ -6,15 +6,21 @@ Web client only. Everyone still needs a logged-in account on the same server. Na
 
 ## Install
 
-Sideload the dll:
+This branch is the test catalog. In Jellyfin: Dashboard → Plugins → Repositories → add:
+
+```text
+https://raw.githubusercontent.com/noxaur/syncplay-refined/cursor/syncplay-invite-link/manifest.json
+```
+
+Then install **SyncPlay Refined** from the catalog and restart. Install [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-transformation) first if you can. It injects the script without touching `index.html` on disk, which is the usual Docker failure.
+
+Sideload instead:
 
 1. `dotnet build Jellyfin.Plugin.SyncPlayRefined/Jellyfin.Plugin.SyncPlayRefined.csproj -c Release`
 2. Copy `Jellyfin.Plugin.SyncPlayRefined.dll` to `<jellyfin-config>/plugins/SyncPlayRefined/`
 3. Restart Jellyfin
 
-Or add this repo's `manifest.json` as a catalog repository once a release zip has `sourceUrl` and `checksum` filled in.
-
-Install [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-transformation) if you can. It injects the script without touching `index.html` on disk, which is the usual Docker failure.
+The test zip on this branch is `dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_1.0.0.0.zip`.
 
 ## Config
 
@@ -40,6 +46,8 @@ https://host:8096/web/index.html?syncplayGroup=GUID#!/home
 
 ## Releases
 
-`manifest.json` is the catalog history. Newest version first. Prepend on bump. Do not rewrite or drop old entries. Keep each changelog to one line. Leave `sourceUrl` and `checksum` empty until the zip exists.
+`manifest.json` is the catalog history. Newest version first. Prepend on bump. Do not rewrite or drop old entries. Keep each changelog to one line.
+
+This test branch's `sourceUrl` points at `dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_1.0.0.0.zip` on `cursor/syncplay-invite-link`. Fill `checksum` with the MD5 of that zip. Never fake hashes.
 
 Version must stay in lockstep in `Jellyfin.Plugin.SyncPlayRefined.csproj`, `build.yaml`, and the new `manifest.json` entry.

@@ -11,8 +11,8 @@
         "version": "1.0.0.0",
         "changelog": "Initial release: copy invite link under Resume local playback, auto-join from the URL.",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "",
-        "checksum": "",
+        "sourceUrl": "https://raw.githubusercontent.com/noxaur/syncplay-refined/cursor/syncplay-invite-link/dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_1.0.0.0.zip",
+        "checksum": "839552809D97320C7BA8AE0634B39A67",
         "timestamp": "2026-08-23T17:00:00Z"
       }
     ]
