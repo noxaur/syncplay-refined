@@ -5,10 +5,17 @@
     <title>SyncPlay Refined</title>
 </head>
 <body>
-    <div id="SyncPlayRefinedConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-button,emby-select">
+    <div id="SyncPlayRefinedConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-button,emby-select,emby-checkbox">
         <div data-role="content">
             <div class="content-primary">
                 <form id="SyncPlayRefinedConfigForm">
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input is="emby-checkbox" type="checkbox" id="RequiresAuthentication" />
+                            <span>Only load for authenticated users</span>
+                        </label>
+                        <div class="fieldDescription">When enabled, the client script waits until a user is signed in. Restart after saving.</div>
+                    </div>
                     <div class="selectContainer">
                         <label class="selectLabel" for="InjectionMethod">Script injection method</label>
                         <select is="emby-select" id="InjectionMethod" name="InjectionMethod">
@@ -45,6 +52,7 @@
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(SyncPlayRefinedConfig.pluginUniqueId).then(function (config) {
                         document.querySelector('#InjectionMethod').value = injectionMethodValue(config.InjectionMethod);
+                        document.querySelector('#RequiresAuthentication').checked = config.RequiresAuthentication !== false;
                         Dashboard.hideLoadingMsg();
                     });
                 });
@@ -54,6 +62,7 @@
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(SyncPlayRefinedConfig.pluginUniqueId).then(function (config) {
                         config.InjectionMethod = document.querySelector('#InjectionMethod').value;
+                        config.RequiresAuthentication = document.querySelector('#RequiresAuthentication').checked;
                         ApiClient.updatePluginConfiguration(SyncPlayRefinedConfig.pluginUniqueId, config).then(function (result) {
                             Dashboard.processPluginConfigurationUpdateResult(result);
                         });

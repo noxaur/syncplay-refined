@@ -22,6 +22,8 @@ public class ScriptController : ControllerBase
 
         using var reader = new StreamReader(stream);
         Response.Headers.CacheControl = "no-store";
-        return Content(reader.ReadToEnd(), "text/javascript");
+        var requireAuth = Plugin.Instance?.Configuration.RequiresAuthentication ?? true;
+        var flag = requireAuth ? "true" : "false";
+        return Content("window.__syncPlayRefinedRequireAuth=" + flag + ";\n" + reader.ReadToEnd(), "text/javascript");
     }
 }

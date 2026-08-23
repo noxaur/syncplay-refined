@@ -15,6 +15,15 @@
     return window.ApiClient || (window.ServerConnections && window.ServerConnections.currentApiClient && window.ServerConnections.currentApiClient()) || null;
   }
 
+  function isAuthed() {
+    var a = api();
+    try {
+      return !!(a && ((typeof a.getCurrentUserId === 'function' && a.getCurrentUserId()) || (typeof a.accessToken === 'function' && a.accessToken())));
+    } catch (e) {
+      return false;
+    }
+  }
+
   function manager() {
     var pm = window.pluginManager;
     var plugin = pm && typeof pm.firstOfType === 'function' && (pm.firstOfType('syncPlay') || pm.firstOfType('SyncPlay'));
@@ -218,13 +227,7 @@
   function tryJoin() {
     var groupId = joinTarget();
     var a = api();
-    var authed = false;
-    try {
-      authed = !!(a && ((typeof a.getCurrentUserId === 'function' && a.getCurrentUserId()) || (typeof a.accessToken === 'function' && a.accessToken())));
-    } catch (e) {
-      /* ignore */
-    }
-    if (!groupId || joining || !authed) {
+    if (!groupId || joining || !isAuthed()) {
       return;
     }
     joining = true;
@@ -247,7 +250,7 @@
     });
   }
 
-  function start() {
+  function captureInvite() {
     try {
       var url = new URL(window.location.href);
       var id = url.searchParams.get(PARAM);
@@ -259,6 +262,10 @@
     } catch (e) {
       /* ignore */
     }
+  }
+
+  function start() {
+    captureInvite();
     tryJoin();
     var ticks = 0;
     var timer = window.setInterval(function () {
@@ -284,9 +291,23 @@
     document.addEventListener('viewshow', tryJoin, true);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start);
+  function boot() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', start);
+    } else {
+      start();
+    }
+  }
+
+  captureInvite();
+  if (window.__syncPlayRefinedRequireAuth === false || isAuthed()) {
+    boot();
   } else {
-    start();
+    var authTimer = window.setInterval(function () {
+      if (isAuthed()) {
+        window.clearInterval(authTimer);
+        boot();
+      }
+    }, 300);
   }
 })();
