@@ -13,4 +13,6 @@ public enum InjectionMethod
 public class PluginConfiguration : BasePluginConfiguration
 {
     public InjectionMethod InjectionMethod { get; set; } = InjectionMethod.Auto;
+
+    public bool RequiresAuthentication { get; set; } = true;
 }

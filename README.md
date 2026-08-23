@@ -24,6 +24,7 @@ Catalog zip: `dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_1.0.0.1.zip`.
 
 Dashboard → Plugins → SyncPlay Refined. Restart after saving.
 
+- **Only load for authenticated users** (default on): the client script waits until a user is signed in
 - **Auto** (default): File Transformation if loaded, else JavaScript Injector if loaded, else a direct `index.html` patch
 - **File Transformation**: in-memory `index.html` transform
 - **JavaScript Injector**: registers a loader with that plugin

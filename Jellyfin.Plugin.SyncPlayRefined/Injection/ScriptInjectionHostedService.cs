@@ -125,7 +125,7 @@ public sealed class ScriptInjectionHostedService : IHostedService
                 ["name"] = plugin.Name,
                 ["script"] = LoaderScript(),
                 ["enabled"] = true,
-                ["requiresAuthentication"] = false,
+                ["requiresAuthentication"] = plugin.Configuration.RequiresAuthentication,
                 ["pluginId"] = plugin.Id.ToString(),
                 ["pluginName"] = plugin.Name,
                 ["pluginVersion"] = plugin.Version.ToString()
