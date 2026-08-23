@@ -8,6 +8,14 @@
     "category": "General",
     "versions": [
       {
+        "version": "2026.8.23.3",
+        "changelog": "Merge pull request #3 from noxaur/cursor/196fc383",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/noxaur/syncplay-refined/main/dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_2026.8.23.3.zip",
+        "checksum": "36D05BB8C13789D4F78370774427F257",
+        "timestamp": "2026-08-23T18:54:19Z"
+      },
+      {
         "version": "2026.8.23.2",
         "changelog": "Simplify the plugin. Catalog versions are now YYYY.M.D.N.",
         "targetAbi": "10.11.0.0",

@@ -1,6 +1,6 @@
 name: "SyncPlay Refined"
 guid: "cb3095db-0efe-4579-831b-b06dc2bbac8f"
-version: "2026.8.23.2"
+version: "2026.8.23.3"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 owner: "per"
@@ -9,4 +9,4 @@ description: "Copy a SyncPlay invite link and auto-join from it."
 category: "General"
 artifacts:
   - "Jellyfin.Plugin.SyncPlayRefined.dll"
-changelog: "Simplify the plugin. Catalog versions are now YYYY.M.D.N."
+changelog: "Merge pull request #3 from noxaur/cursor/196fc383"
