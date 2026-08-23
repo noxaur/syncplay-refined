@@ -25,6 +25,7 @@ Zips live in `dist/`. The catalog is `manifest.json`.
 Dashboard → Plugins → SyncPlay Refined. Restart after saving.
 
 - **Only load for authenticated users** (default on): the client script waits until a user is signed in
+- **Replace Leave group with Disband group** (default off): the Leave group button becomes Disband group and removes everyone. Reload the web client after saving
 - **Auto** (default): File Transformation if loaded, else JavaScript Injector if loaded, else a direct `index.html` patch
 - **File Transformation**: in-memory `index.html` transform
 - **JavaScript Injector**: registers a loader with that plugin
