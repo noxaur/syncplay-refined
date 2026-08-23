@@ -1,0 +1,20 @@
+[
+  {
+    "guid": "cb3095db-0efe-4579-831b-b06dc2bbac8f",
+    "name": "SyncPlay Refined",
+    "description": "Copy a SyncPlay invite link and auto-join from it.",
+    "overview": "SyncPlay invite links",
+    "owner": "per",
+    "category": "General",
+    "versions": [
+      {
+        "version": "1.0.0.0",
+        "changelog": "Initial release: copy invite link under Resume local playback, auto-join from the URL.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "",
+        "checksum": "",
+        "timestamp": "2026-08-23T17:00:00Z"
+      }
+    ]
+  }
+]

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>SyncPlay Refined</title>
+</head>
+<body>
+    <div id="SyncPlayRefinedConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-button,emby-select">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="SyncPlayRefinedConfigForm">
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="InjectionMethod">Script injection method</label>
+                        <select is="emby-select" id="InjectionMethod" name="InjectionMethod">
+                            <option value="Auto">Auto</option>
+                            <option value="FileTransformation">File Transformation plugin</option>
+                            <option value="JavaScriptInjector">JavaScript Injector plugin</option>
+                            <option value="DirectIndexHtml">Direct index.html patch</option>
+                        </select>
+                        <div class="fieldDescription">
+                            How the share-button script is loaded into jellyfin-web. Restart the server after saving.
+                            Auto uses File Transformation if it is installed, then JavaScript Injector, then a direct edit of index.html.
+                            File Transformation is the least painful option, especially in Docker.
+                        </div>
+                    </div>
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script>
+            var SyncPlayRefinedConfig = {
+                pluginUniqueId: 'cb3095db-0efe-4579-831b-b06dc2bbac8f',
+                methods: ['Auto', 'FileTransformation', 'JavaScriptInjector', 'DirectIndexHtml']
+            };
+
+            function injectionMethodValue(raw) {
+                if (typeof raw === 'number') {
+                    return SyncPlayRefinedConfig.methods[raw] || 'Auto';
+                }
+                return raw || 'Auto';
+            }
+
+            document.querySelector('#SyncPlayRefinedConfigPage')
+                .addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(SyncPlayRefinedConfig.pluginUniqueId).then(function (config) {
+                        document.querySelector('#InjectionMethod').value = injectionMethodValue(config.InjectionMethod);
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+            document.querySelector('#SyncPlayRefinedConfigForm')
+                .addEventListener('submit', function (e) {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(SyncPlayRefinedConfig.pluginUniqueId).then(function (config) {
+                        config.InjectionMethod = document.querySelector('#InjectionMethod').value;
+                        ApiClient.updatePluginConfiguration(SyncPlayRefinedConfig.pluginUniqueId, config).then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                        });
+                    });
+
+                    e.preventDefault();
+                    return false;
+                });
+        </script>
+    </div>
+</body>
+</html>
