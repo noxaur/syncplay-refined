@@ -5,6 +5,10 @@ public static class IndexHtmlTransformer
     public const string Marker = "plugin=\"SyncPlay Refined\"";
     public const string ScriptTag = "<script plugin=\"SyncPlay Refined\" src=\"../SyncPlayRefined/script\"></script>";
 
+    // File Transformation compiles this as a regex. Escape the dot so we
+    // match index.html and not session-login-index-html.*.chunk.js.
+    public const string FileNamePattern = @"index\.html$";
+
     public static string Inject(string html)
     {
         if (html.Contains(Marker, StringComparison.Ordinal))
@@ -13,7 +17,12 @@ public static class IndexHtmlTransformer
         }
 
         var bodyClose = html.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
-        return bodyClose < 0 ? html + ScriptTag : html.Insert(bodyClose, ScriptTag + "\n");
+        if (bodyClose < 0)
+        {
+            return html;
+        }
+
+        return html.Insert(bodyClose, ScriptTag + "\n");
     }
 
     public static string Strip(string html)
