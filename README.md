@@ -7,7 +7,7 @@ Jellyfin 10.11 plugin. Adds **Copy invite link** under **Resume local playback**
 Dashboard → Plugins → Repositories. Add:
 
 ```text
-https://raw.githubusercontent.com/noxaur/syncplay-refined/cursor/syncplay-invite-link/manifest.json
+https://raw.githubusercontent.com/noxaur/syncplay-refined/main/manifest.json
 ```
 
 Install **SyncPlay Refined** and restart. Install [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-transformation) first if you can. It injects the script without writing `index.html`, which Docker often cannot.
@@ -18,7 +18,7 @@ Sideload:
 2. Copy `Jellyfin.Plugin.SyncPlayRefined.dll` to `<jellyfin-config>/plugins/SyncPlayRefined/`
 3. Restart Jellyfin
 
-Catalog zip: `dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_1.0.0.1.zip`.
+Zips live in `dist/`. The catalog is `manifest.json`.
 
 ## Config
 
@@ -38,4 +38,4 @@ Dashboard → Plugins → SyncPlay Refined. Restart after saving.
 
 ## Releases
 
-Prepend new entries to `versions[]` in `manifest.json`. Do not rewrite or drop old ones. `checksum` is the uppercase MD5 of the zip.
+Versions are `YYYY.M.D.N` (UTC date, then a same-day counter). A push to `main` packs a new catalog entry; other branches only compile. Prepend to `versions[]` in `manifest.json`. Do not drop old entries. `checksum` is the uppercase MD5 of the zip.
