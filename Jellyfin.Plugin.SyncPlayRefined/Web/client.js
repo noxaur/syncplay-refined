@@ -426,9 +426,6 @@
       });
     }).observe(document.documentElement, { childList: true, subtree: true });
     scan();
-    loadFlags().then(function () {
-      scan();
-    });
     document.addEventListener('viewshow', tryJoin, true);
   }
 
@@ -441,14 +438,16 @@
   }
 
   captureInvite();
-  if (window.__syncPlayRefinedRequireAuth === false || isAuthed()) {
-    boot();
-  } else {
-    var authTimer = window.setInterval(function () {
-      if (isAuthed()) {
-        window.clearInterval(authTimer);
-        boot();
-      }
-    }, 300);
-  }
+  loadFlags().then(function () {
+    if (window.__syncPlayRefinedRequireAuth === false || isAuthed()) {
+      boot();
+    } else {
+      var authTimer = window.setInterval(function () {
+        if (isAuthed()) {
+          window.clearInterval(authTimer);
+          boot();
+        }
+      }, 300);
+    }
+  });
 })();

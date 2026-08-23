@@ -232,11 +232,8 @@ public sealed class ScriptInjectionHostedService : IHostedService
             (function () {
               var src = '__SRC__';
               var existing = document.querySelector('script[plugin="SyncPlay Refined"]');
-              if (existing) {
-                if ((existing.getAttribute('src') || '') === src) return;
-                existing.src = src;
-                return;
-              }
+              if (existing && (existing.getAttribute('src') || '') === src) return;
+              if (existing) existing.remove();
               var s = document.createElement('script');
               s.setAttribute('plugin', 'SyncPlay Refined');
               s.src = src;
