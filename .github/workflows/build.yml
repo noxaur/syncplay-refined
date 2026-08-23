@@ -13,6 +13,7 @@ jobs:
         with:
           dotnet-version: "9.0.x"
       - run: python3 scripts/release.py self-test
+      - run: python3 scripts/check_disband.py
       - run: dotnet build Jellyfin.Plugin.SyncPlayRefined/Jellyfin.Plugin.SyncPlayRefined.csproj -c Release
 
   catalog:
