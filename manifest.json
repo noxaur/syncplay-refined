@@ -8,6 +8,14 @@
     "category": "General",
     "versions": [
       {
+        "version": "2026.8.23.6",
+        "changelog": "Merge pull request #6 from noxaur/cursor/dev-toggle-bfc7",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/noxaur/syncplay-refined/main/dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_2026.8.23.6.zip",
+        "checksum": "7DBCD62662A58CED66D3CE7D6CADD97A",
+        "timestamp": "2026-08-23T21:17:22Z"
+      },
+      {
         "version": "2026.8.23.5",
         "changelog": "Add a setting that turns Leave group into Disband group. (#7)",
         "targetAbi": "10.11.0.0",

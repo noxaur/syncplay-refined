@@ -1,6 +1,6 @@
 name: "SyncPlay Refined"
 guid: "cb3095db-0efe-4579-831b-b06dc2bbac8f"
-version: "2026.8.23.5"
+version: "2026.8.23.6"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 owner: "per"
@@ -9,4 +9,4 @@ description: "Copy a SyncPlay invite link and auto-join from it."
 category: "General"
 artifacts:
   - "Jellyfin.Plugin.SyncPlayRefined.dll"
-changelog: "Add a setting that turns Leave group into Disband group. (#7)"
+changelog: "Merge pull request #6 from noxaur/cursor/dev-toggle-bfc7"
