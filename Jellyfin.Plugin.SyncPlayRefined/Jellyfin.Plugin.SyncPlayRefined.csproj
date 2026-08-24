@@ -5,8 +5,8 @@
     <AssemblyName>Jellyfin.Plugin.SyncPlayRefined</AssemblyName>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyVersion>2026.8.24.0</AssemblyVersion>
-    <FileVersion>2026.8.24.0</FileVersion>
+    <AssemblyVersion>2026.8.24.1</AssemblyVersion>
+    <FileVersion>2026.8.24.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

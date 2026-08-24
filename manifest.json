@@ -8,6 +8,14 @@
     "category": "General",
     "versions": [
       {
+        "version": "2026.8.24.1",
+        "changelog": "Register File Transformation under the index.html key Auto already thinks it uses. (#9)",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/noxaur/syncplay-refined/main/dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_2026.8.24.1.zip",
+        "checksum": "2C6CF4AD377144024816623E6378B54D",
+        "timestamp": "2026-08-24T07:58:45Z"
+      },
+      {
         "version": "2026.8.24.0",
         "changelog": "Cache-bust the injected script so prod picks up plugin updates (#8)",
         "targetAbi": "10.11.0.0",
