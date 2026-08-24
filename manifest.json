@@ -8,6 +8,14 @@
     "category": "General",
     "versions": [
       {
+        "version": "2026.8.24.0",
+        "changelog": "Cache-bust the injected script so prod picks up plugin updates (#8)",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/noxaur/syncplay-refined/main/dist/Jellyfin.Plugin.SyncPlayRefined_10.11.0_2026.8.24.0.zip",
+        "checksum": "E50F01CFE9AFD4968F3BA616AEDE7A13",
+        "timestamp": "2026-08-24T06:34:31Z"
+      },
+      {
         "version": "2026.8.23.6",
         "changelog": "Merge pull request #6 from noxaur/cursor/dev-toggle-bfc7",
         "targetAbi": "10.11.0.0",
