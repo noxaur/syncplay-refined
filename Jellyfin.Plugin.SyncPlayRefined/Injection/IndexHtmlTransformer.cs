@@ -6,9 +6,14 @@ public static class IndexHtmlTransformer
 {
     public const string Marker = "plugin=\"SyncPlay Refined\"";
 
-    // File Transformation compiles this as a regex. Escape the dot so we
-    // match index.html and not session-login-index-html.*.chunk.js.
-    public const string FileNamePattern = @"index\.html$";
+    // File Transformation 2.5.x stores this as a dictionary key and only
+    // regex-matches when that exact key is missing. PluginPages, JavaScript
+    // Injector, and Jellyfin Enhanced all register "index.html", so a
+    // regex-only key like index\.html$ never runs on a server that already
+    // has those. The literal key joins their pipeline. Inject() must still
+    // refuse JS because FT will regex-fallback this key against
+    // session-login-index-html.*.chunk.js.
+    public const string FileNamePattern = "index.html";
 
     private static readonly Regex InjectedScript = new(
         @"<script[^>]*plugin=""SyncPlay Refined""[^>]*>\s*</script>\n?",
@@ -24,6 +29,11 @@ public static class IndexHtmlTransformer
 
     public static string Inject(string html)
     {
+        if (!LooksLikeHtmlDocument(html))
+        {
+            return html;
+        }
+
         if (html.Contains(Marker, StringComparison.Ordinal))
         {
             // Prod index.html may still have an unversioned tag from an older
@@ -38,6 +48,16 @@ public static class IndexHtmlTransformer
         }
 
         return html.Insert(bodyClose, ScriptTag + "\n");
+    }
+
+    // ponytail: prefix sniff. A webpack chunk that started with <!DOCTYPE or
+    // <html would still get a tag. Upgrade if FT ever passes the request path
+    // into the callback so we can require a real index.html name.
+    private static bool LooksLikeHtmlDocument(string html)
+    {
+        var t = html.AsSpan().TrimStart();
+        return t.StartsWith("<!DOCTYPE", StringComparison.OrdinalIgnoreCase)
+            || t.StartsWith("<html", StringComparison.OrdinalIgnoreCase);
     }
 
     public static string Strip(string html)

@@ -10,26 +10,46 @@ public class IndexHtmlTransformerTests
         "session-login-index-html.7df1620bd3afcef60eb7.chunk.js";
 
     [Fact]
-    public void FileNamePattern_matches_index_html_only()
+    public void FileNamePattern_is_the_file_transformation_dictionary_key()
     {
-        var re = new Regex(IndexHtmlTransformer.FileNamePattern);
-        Assert.Matches(re, "index.html");
-        Assert.Matches(re, "/jellyfin/jellyfin-web/index.html");
-        Assert.DoesNotMatch(re, LoginChunk);
-        Assert.DoesNotMatch(re, "session-login-index-html.chunk.js");
-        Assert.DoesNotMatch(re, "settings-index-html.eb37b8107cd35488a326.chunk.js");
+        Assert.Equal("index.html", IndexHtmlTransformer.FileNamePattern);
+    }
+
+    [Fact]
+    public void FileTransformation_skips_a_regex_only_key_when_index_html_is_already_registered()
+    {
+        Assert.Equal(
+            "index.html",
+            FileTransformationPipelineKey("index.html", "index.html", @"index\.html$"));
+        Assert.Equal(
+            "index.html",
+            FileTransformationPipelineKey("/index.html", "index.html", @"index\.html$"));
+        Assert.Equal(
+            @"index\.html$",
+            FileTransformationPipelineKey("index.html", @"index\.html$"));
+        Assert.NotEqual(
+            @"index\.html$",
+            FileTransformationPipelineKey("index.html", "index.html", @"index\.html$"));
     }
 
     [Fact]
     public void Unescaped_index_html_regex_matches_the_login_chunk()
     {
         Assert.Matches("index.html", LoginChunk);
+        Assert.Equal("index.html", FileTransformationPipelineKey(LoginChunk, "index.html"));
     }
 
     [Fact]
     public void Inject_leaves_javascript_chunks_unchanged()
     {
         var js = "!function(){console.log(\"login\")}();";
+        Assert.Equal(js, IndexHtmlTransformer.Inject(js));
+    }
+
+    [Fact]
+    public void Inject_leaves_javascript_that_embeds_body_markup_unchanged()
+    {
+        var js = "!function(){document.write('</body></html>')}();";
         Assert.Equal(js, IndexHtmlTransformer.Inject(js));
     }
 
@@ -62,5 +82,19 @@ public class IndexHtmlTransformerTests
 
         var current = "<html><body>" + IndexHtmlTransformer.ScriptTag + "</body></html>";
         Assert.DoesNotContain(IndexHtmlTransformer.Marker, IndexHtmlTransformer.Strip(current), StringComparison.Ordinal);
+    }
+
+    // Mirrors File Transformation 2.5.x WebFileTransformationService.RunTransformation:
+    // exact dictionary key first, regex fallback only if that key is missing.
+    private static string? FileTransformationPipelineKey(string requestPath, params string[] registeredKeys)
+    {
+        var keys = registeredKeys.Select(k => k.TrimStart('/')).ToArray();
+        var path = requestPath.TrimStart('/');
+        if (keys.Contains(path))
+        {
+            return path;
+        }
+
+        return keys.FirstOrDefault(key => Regex.IsMatch(path, key));
     }
 }
