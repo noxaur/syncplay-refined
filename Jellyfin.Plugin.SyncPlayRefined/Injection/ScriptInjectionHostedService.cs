@@ -37,9 +37,7 @@ public sealed class ScriptInjectionHostedService : IHostedService
             InjectionMethod.FileTransformation => TryRegisterFileTransformation(),
             InjectionMethod.JavaScriptInjector => TryRegisterJavaScriptInjector(),
             InjectionMethod.DirectIndexHtml => TryPatchIndexHtml(),
-            _ => TryRegisterFileTransformation()
-                || TryRegisterJavaScriptInjector()
-                || TryPatchIndexHtml()
+            _ => RegisterAuto()
         };
         if (!ok)
         {
@@ -68,6 +66,18 @@ public sealed class ScriptInjectionHostedService : IHostedService
         }
 
         return Task.CompletedTask;
+    }
+
+    private bool RegisterAuto()
+    {
+        var ft = TryRegisterFileTransformation();
+        var js = TryRegisterJavaScriptInjector();
+        if (ft || js)
+        {
+            return true;
+        }
+
+        return TryPatchIndexHtml();
     }
 
     private bool TryRegisterFileTransformation()
