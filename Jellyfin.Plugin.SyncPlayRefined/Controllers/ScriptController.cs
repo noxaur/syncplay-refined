@@ -33,17 +33,22 @@ public class ScriptController : ControllerBase
         }
 
         using var reader = new StreamReader(stream);
-        Response.Headers.CacheControl = "no-store";
-        var config = Plugin.Instance?.Configuration;
-        var requireAuth = config?.RequiresAuthentication ?? true;
-        var enableDev = config?.EnableDevFeatures ?? false;
-        var disband = config?.DisbandGroup == true;
+        NoStore();
+        var flags = CurrentFlags();
         return Content(
-            "window.__syncPlayRefinedRequireAuth=" + (requireAuth ? "true" : "false") +
-            ";window.__syncPlayRefinedDev=" + (enableDev ? "true" : "false") +
-            ";window.__syncPlayRefinedDisbandGroup=" + (disband ? "true" : "false") + ";\n" +
+            "window.__syncPlayRefinedRequireAuth=" + (flags.RequiresAuthentication ? "true" : "false") +
+            ";window.__syncPlayRefinedDev=" + (flags.EnableDevFeatures ? "true" : "false") +
+            ";window.__syncPlayRefinedDisbandGroup=" + (flags.DisbandGroup ? "true" : "false") + ";\n" +
             reader.ReadToEnd(),
             "text/javascript");
+    }
+
+    [HttpGet("flags")]
+    [AllowAnonymous]
+    public ActionResult GetFlags()
+    {
+        NoStore();
+        return Ok(CurrentFlags());
     }
 
     [HttpPost("Disband")]
@@ -79,6 +84,23 @@ public class ScriptController : ControllerBase
 
         return NoContent();
     }
+
+    private void NoStore()
+    {
+        Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+        Response.Headers.Pragma = "no-cache";
+    }
+
+    private static Flags CurrentFlags()
+    {
+        var config = Plugin.Instance?.Configuration;
+        return new Flags(
+            config?.RequiresAuthentication ?? true,
+            config?.DisbandGroup == true,
+            config?.EnableDevFeatures == true);
+    }
+
+    private sealed record Flags(bool RequiresAuthentication, bool DisbandGroup, bool EnableDevFeatures);
 
     private SessionInfo? CurrentSession()
     {

@@ -22,7 +22,8 @@ function installBrowserStubs() {
     documentElement: {},
     addEventListener() {},
     querySelector() { return null; },
-    querySelectorAll() { return []; }
+    querySelectorAll() { return []; },
+    getElementsByTagName() { return []; }
   };
   g.localStorage = store();
   g.sessionStorage = store();
@@ -35,6 +36,7 @@ function installBrowserStubs() {
   g.setTimeout = function () { return 0; };
   g.XMLHttpRequest = function () {};
   g.XMLHttpRequest.prototype = { open: function () {} };
+  g.fetch = function () { return Promise.reject(new Error('offline')); };
   g.URL = URL;
   g.__syncPlayRefinedRequireAuth = false;
   delete g.__syncPlayRefined;
