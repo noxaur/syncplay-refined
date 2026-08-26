@@ -1,6 +1,6 @@
 # SyncPlay Refined
 
-Jellyfin 10.11 plugin. Adds **Copy invite link** under **Resume local playback** in the SyncPlay menu. Recipients who open the link join that group automatically. Web client only; everyone needs a logged-in account on the same server.
+A Jellyfin 10.11 plugin for the web client. It puts Copy invite link under Resume local playback in the SyncPlay menu. Open that URL while logged into the same server and you join the group. Native apps get nothing from this. Guests get nothing either. Everyone has to have an account.
 
 ## Install
 
@@ -10,37 +10,36 @@ Dashboard → Plugins → Repositories. Add:
 https://raw.githubusercontent.com/noxaur/syncplay-refined/refs/heads/main/manifest.json
 ```
 
-Install **SyncPlay Refined** and restart. Install [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-transformation) first if you can. It injects the script without writing `index.html`, which Docker often cannot.
+Install SyncPlay Refined and restart.
 
-Sideload:
+Put [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-transformation) on the server first if you can. That plugin injects the script in memory. Direct writes to `index.html` fail on a lot of Docker setups, and Auto will try them anyway if nothing else is installed.
+
+To build and drop the DLL in by hand:
 
 1. `dotnet build Jellyfin.Plugin.SyncPlayRefined/Jellyfin.Plugin.SyncPlayRefined.csproj -c Release`
 2. Copy `Jellyfin.Plugin.SyncPlayRefined.dll` to `<jellyfin-config>/plugins/SyncPlayRefined/`
 3. Restart Jellyfin
 
-Zips live in `dist/`. The catalog is `manifest.json`.
+Release zips sit in `dist/`. The plugin catalog is `manifest.json`.
 
 ## Config
 
 Dashboard → Plugins → SyncPlay Refined. Restart after saving.
 
-- **Only load for authenticated users** (default on): the client script waits until a user is signed in
-- **Replace Leave group with Disband group** (default off): the Leave group button becomes Disband group and removes everyone. Reload the web client after saving
-- **Enable experimental features** (default off): unfinished client features, every web client on this server. Reload the web client after saving. WIP checks `SyncPlayRefinedDev.enabled()` or `SyncPlayRefinedDev.feature('name')`
-- **Auto** (default): File Transformation and JavaScript Injector when present, else a direct `index.html` patch
-- **File Transformation**: in-memory `index.html` transform
-- **JavaScript Injector**: registers a loader with that plugin
-- **Direct index.html**: writes a `<script>` tag into jellyfin-web's `index.html`. Docker often cannot write that file
+**Only load for authenticated users.** On by default. The client script waits until someone is signed in.
 
-After a plugin update, hard-refresh the web client once. The script URL is `/SyncPlayRefined/script?v=<plugin-version>`, so an old cached `client.js` should not stick after that. Settings toggles also refresh from `/SyncPlayRefined/flags` on load.
+**Replace Leave group with Disband group.** Off by default. Leave group becomes Disband group and kicks everyone, not just you. Reload the web client after you save this.
+
+**Enable experimental features.** Off by default. Turns on unfinished client work for every web client on this server. Reload after saving. From the console, `SyncPlayRefinedDev.enabled()` and `SyncPlayRefinedDev.feature('name')` tell you what is live.
+
+**Script injection method.** Auto uses File Transformation and JavaScript Injector when those plugins exist, then falls back to patching `index.html`. File Transformation transforms `index.html` in memory. JavaScript Injector registers a loader with that plugin. Direct index.html writes a `<script>` tag into jellyfin-web's `index.html`, which Docker often cannot touch.
+
+After a plugin update, hard-refresh the web client once. The script URL is `/SyncPlayRefined/script?v=<plugin-version>`, so a stale `client.js` should not survive that. Toggles also come from `/SyncPlayRefined/flags` on load.
 
 ## Use
 
-1. Join or create a SyncPlay group
-2. Open the SyncPlay menu
-3. Copy invite link (under Resume / Stop local playback)
-4. Send the URL. After login, the other client joins the group and resumes group playback. The link is the current page with `?syncplayGroup=` on the query string.
+Join or create a SyncPlay group, open the SyncPlay menu, copy the invite link under Resume / Stop local playback, and send it. After login, the other client joins and resumes group playback. The link is whatever page you were on, plus `?syncplayGroup=` on the query string.
 
 ## Releases
 
-Versions are `YYYY.M.D.N` (UTC date, then a same-day counter). A push to `main` packs a new catalog entry; other branches only compile. Prepend to `versions[]` in `manifest.json`. Do not drop old entries. `checksum` is the uppercase MD5 of the zip.
+Versions look like `YYYY.M.D.N`. UTC date, then a same-day counter. A push to `main` prepends a new entry to `versions[]` in `manifest.json`. Other branches only compile. Keep old entries. `checksum` is the uppercase MD5 of the zip.
